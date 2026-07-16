@@ -2,6 +2,8 @@
   "name": "codex-dream-skin",
   "version": "1.2.0",
   "private": true,
+  "author": "Wesong",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "test": "./tests/run-tests.sh",
