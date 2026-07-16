@@ -7,12 +7,14 @@ PORT=9341
 CREATE_LAUNCHERS="true"
 LAUNCH_AFTER_INSTALL="true"
 IN_PLACE="false"
+REPLACE_BUNDLED_THEME="false"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --port) PORT="${2:-}"; shift 2 ;;
     --no-launchers) CREATE_LAUNCHERS="false"; shift ;;
     --no-launch) LAUNCH_AFTER_INSTALL="false"; shift ;;
     --in-place) IN_PLACE="true"; shift ;;
+    --replace-bundled-theme) REPLACE_BUNDLED_THEME="true"; shift ;;
     *) fail "Unknown installer argument: $1" ;;
   esac
 done
@@ -45,13 +47,39 @@ if [ "$IN_PLACE" = "false" ] && [ "$PROJECT_ROOT" != "$INSTALL_ROOT" ]; then
   install_args=(--in-place --port "$PORT")
   [ "$CREATE_LAUNCHERS" = "true" ] || install_args+=(--no-launchers)
   [ "$LAUNCH_AFTER_INSTALL" = "true" ] || install_args+=(--no-launch)
+  [ "$REPLACE_BUNDLED_THEME" = "true" ] && install_args+=(--replace-bundled-theme)
   exec "$INSTALL_ROOT/scripts/install-dream-skin-macos.sh" "${install_args[@]}"
 fi
+
+seed_bundled_theme() {
+  if [ "$REPLACE_BUNDLED_THEME" != "true" ] && [ -f "$THEME_DIR/theme.json" ]; then
+    return 0
+  fi
+
+  local bundled_config="$PROJECT_ROOT/assets/theme.json"
+  local bundled_image
+  [ -s "$bundled_config" ] || fail "Bundled theme configuration is missing: $bundled_config"
+  bundled_image="$("$NODE" -e '
+    const fs = require("fs");
+    const path = require("path");
+    const theme = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    if (typeof theme.image !== "string" || !theme.image || path.basename(theme.image) !== theme.image) process.exit(1);
+    process.stdout.write(theme.image);
+  ' "$bundled_config")" || fail "Bundled theme image name is invalid."
+  [ -s "$PROJECT_ROOT/assets/$bundled_image" ] || fail "Bundled theme image is missing: $bundled_image"
+
+  /bin/mkdir -p "$THEME_DIR"
+  /bin/chmod 700 "$THEME_DIR"
+  /bin/cp "$bundled_config" "$THEME_DIR/theme.json"
+  /bin/cp "$PROJECT_ROOT/assets/$bundled_image" "$THEME_DIR/$bundled_image"
+  /bin/chmod 600 "$THEME_DIR/theme.json" "$THEME_DIR/$bundled_image"
+}
 
 discover_codex_app
 require_macos_runtime
 ensure_state_root
 [ -f "$CONFIG_PATH" ] || fail "Codex config not found: $CONFIG_PATH. Launch Codex once, close it, and rerun the installer."
+seed_bundled_theme
 "$NODE" "$INJECTOR" --check-payload --theme-dir "$THEME_DIR" >/dev/null
 "$NODE" "$SCRIPT_DIR/theme-config.mjs" install "$CONFIG_PATH" "$THEME_BACKUP_PATH"
 

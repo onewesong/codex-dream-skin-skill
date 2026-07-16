@@ -32,7 +32,7 @@
    然后运行 `<SKILL>/tests/run-tests.sh`。测试失败时先定位并修复，禁止跳过。
 
 4. 确认官方 Codex 至少运行过一次，且 `~/.codex/config.toml` 已存在。运行：
-   `<SKILL>/scripts/install-dream-skin-macos.sh --no-launch`
+   `<SKILL>/scripts/install-dream-skin-macos.sh --replace-bundled-theme --no-launch`
    完整 Skill 应被安装到 `~/.codex/skills/codex-dream-skin`，并生成桌面启动、定制、验证和恢复入口。
 
 5. 如果我上传了主题图片，使用安装后的脚本处理素材：

@@ -21,7 +21,7 @@ trap '/bin/rm -rf "$TMP"' EXIT
   '#!/bin/bash' \
   'set -euo pipefail' \
   'ROOT="$(cd "$(dirname "$0")" && pwd -P)"' \
-  'exec "$ROOT/Codex Dream Skin Skill/scripts/install-dream-skin-macos.sh"' \
+  'exec "$ROOT/Codex Dream Skin Skill/scripts/install-dream-skin-macos.sh" --replace-bundled-theme' \
   > "$CLIENT_ROOT/安装 Codex 主题编辑器.command"
 
 /usr/bin/printf '%s\n' \
