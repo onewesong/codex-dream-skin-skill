@@ -43,8 +43,22 @@ if (mode === "reset-demo") {
   if (outputDir === path.join(root, "assets")) {
     throw new Error("Refusing to delete the bundled demo assets; pass a user --output-dir.");
   }
+
+  const bundledDir = path.join(root, "assets");
+  const bundledThemePath = path.join(bundledDir, "theme.json");
+  const bundledTheme = JSON.parse(await fs.readFile(bundledThemePath, "utf8"));
+  if (typeof bundledTheme.image !== "string" || !bundledTheme.image || path.basename(bundledTheme.image) !== bundledTheme.image) {
+    throw new Error("The bundled theme has an invalid image name.");
+  }
+  const bundledImagePath = path.join(bundledDir, bundledTheme.image);
+  await fs.access(bundledImagePath);
   await fs.rm(outputDir, { recursive: true, force: true });
-  console.log("Restored the bundled abstract demo preset.");
+  await fs.mkdir(outputDir, { recursive: true, mode: 0o700 });
+  await fs.copyFile(bundledThemePath, themePath);
+  await fs.copyFile(bundledImagePath, path.join(outputDir, bundledTheme.image));
+  await fs.chmod(themePath, 0o600);
+  await fs.chmod(path.join(outputDir, bundledTheme.image), 0o600);
+  console.log(`Restored the bundled preset “${bundledTheme.name || "Codex Dream Skin"}”.`);
   process.exit(0);
 }
 

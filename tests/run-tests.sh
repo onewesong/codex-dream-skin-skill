@@ -28,7 +28,14 @@ fi
 TMP="$(/usr/bin/mktemp -d /tmp/codex-dream-skin-tests.XXXXXX)"
 trap '/bin/rm -rf "$TMP"' EXIT
 /bin/mkdir -p "$TMP/theme"
-/bin/cp "$ROOT/assets/portal-hero.png" "$TMP/theme/background.png"
+DEFAULT_IMAGE="$("$NODE" -e '
+  const fs = require("fs");
+  const path = require("path");
+  const theme = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+  if (typeof theme.image !== "string" || !theme.image || path.basename(theme.image) !== theme.image) process.exit(1);
+  process.stdout.write(theme.image);
+' "$ROOT/assets/theme.json")"
+/bin/cp "$ROOT/assets/$DEFAULT_IMAGE" "$TMP/theme/background.png"
 "$NODE" "$ROOT/scripts/write-theme.mjs" custom --output-dir "$TMP/theme" \
   --image background.png --name '测试主题' --tagline '测试口号' --quote 'TEST' \
   --accent '#11aa55' --secondary '#22bbcc' --highlight '#663399' >/dev/null
@@ -38,7 +45,12 @@ PAYLOAD_JSON="$("$NODE" "$ROOT/scripts/injector.mjs" --check-payload --theme-dir
   if (!value.pass || value.themeName !== "测试主题" || value.imageBytes < 1) process.exit(1);
 ' "$PAYLOAD_JSON"
 "$NODE" "$ROOT/scripts/write-theme.mjs" reset-demo --output-dir "$TMP/theme" >/dev/null
-[ ! -e "$TMP/theme" ]
+"$NODE" -e '
+  const fs = require("fs");
+  const path = require("path");
+  const theme = JSON.parse(fs.readFileSync(path.join(process.argv[1], "theme.json"), "utf8"));
+  if (theme.image !== process.argv[2] || !fs.existsSync(path.join(process.argv[1], theme.image))) process.exit(1);
+' "$TMP/theme" "$DEFAULT_IMAGE"
 
 CONFIG="$TMP/config.toml"
 BACKUP="$TMP/theme-backup.json"
