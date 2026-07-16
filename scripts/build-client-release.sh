@@ -5,13 +5,18 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 NODE="${NODE:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
 [ -x "$NODE" ] || { printf 'Codex bundled Node.js was not found: %s\n' "$NODE" >&2; exit 1; }
 STRIP_UNUSED_ASSETS="false"
-if [ "${1:-}" = "--strip-unused-assets" ]; then
-  STRIP_UNUSED_ASSETS="true"
-  shift
-fi
+PACKAGE_NAME="Codex 主题编辑器"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --strip-unused-assets) STRIP_UNUSED_ASSETS="true"; shift ;;
+    --package-name) PACKAGE_NAME="${2:-}"; shift 2 ;;
+    *) break ;;
+  esac
+done
+[ -n "$PACKAGE_NAME" ] || { printf 'Package name must not be empty.\n' >&2; exit 1; }
 OUTPUT="${1:-$HOME/Desktop/Codex 主题编辑器.zip}"
 TMP="$(/usr/bin/mktemp -d /tmp/codex-dream-client.XXXXXX)"
-CLIENT_ROOT="$TMP/Codex 主题编辑器"
+CLIENT_ROOT="$TMP/$PACKAGE_NAME"
 RUNTIME="$CLIENT_ROOT/Codex Dream Skin Runtime"
 trap '/bin/rm -rf "$TMP"' EXIT
 
