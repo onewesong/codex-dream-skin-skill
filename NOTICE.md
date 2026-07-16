@@ -15,7 +15,7 @@ It does **not** grant rights to:
 
 ## Demo artwork
 
-`assets/portal-hero.png` is original abstract geometric art generated for this open-source repository (no characters). Replace it with your own image before shipping a branded theme to customers.
+The repository's default `assets/portal-hero.png` is original abstract geometric art generated for this open-source repository (no characters). Branded release packages may replace or omit it; ship only artwork you are permitted to distribute.
 
 ## Runtime
 

@@ -62,7 +62,7 @@ To build the “double-click install” folder layout for non-git users:
 ./scripts/build-client-release.sh "$HOME/Desktop/Codex 主题编辑器.zip"
 ```
 
-That ZIP contains a visible installer plus the complete Skill runtime. Do not ship only CSS/images.
+That ZIP is a standalone double-click installer: it contains only the theme runtime and installs it under `~/Library/Application Support/CodexDreamSkinStudio/runtime`. It does not install a Codex Skill.
 
 ## How it works (security boundary)
 
